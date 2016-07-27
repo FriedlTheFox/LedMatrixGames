@@ -1,4 +1,4 @@
 # Hello World!
-My first GitHub project!
-It's very easy to create branches in GitHub :-)
+My first GitHub project!<br>
+It's very easy to create branches in GitHub :-)<br>
 Thanks
