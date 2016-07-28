@@ -1,9 +1,5 @@
 '''
 Moving DOT
-
-created by Friedl the Fox
-(c) 2015
-
 '''
 
 import time

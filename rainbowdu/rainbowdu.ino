@@ -1,8 +1,7 @@
 /* 
- * Matrix demonstration
+ * rainbowduino middleware
  * 
- * created by Friedl the fox
- * (c) 2015
+ * Interface between the MY9221 driver and the serial connection of the ATmega
  * 
  */
 
