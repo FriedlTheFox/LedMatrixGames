@@ -8,19 +8,42 @@
 
 void MatrixDriver::init()
 {
-    DDR_Lines |= BIT_Lines;
-    PORT_Lines &=~ BIT_Lines;
 
-    DDRD |= 0x04;
+    // set all decoder lines as output and set them to LOW
+	DEC_DDR |= _BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3);
+	DEC_PORT &=~ (_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3));
 
-    DDR_Data |= BIT_Data;
-    DDR_Clk |= BIT_Clk;
-    PORT_Data &=~ BIT_Data;
-    PORT_Clk &=~ BIT_Clk;
-
-    DDRB |= 0x20;
+	// set all driver lines as output and set them to LOW
+	MY9221_DDR |= _BV(MY9221_DI) | _BV(MY9221_DCKI);
+	MY9221_PORT &=~ (_BV(MY9221_DI) | _BV(MY9221_DCKI));
 
     clearDisplay();
+
+	// use timer1 to create a task which gets called every 100us
+    cli();//stop interrupts
+
+	// Register |   7    |   6    |   5    |   4    |   3    |   2    |   1    |   0
+	//----------+--------+--------+--------+--------+--------+--------+--------+------
+	//  TCCR1A  | COM1A1 | COM1A0 | COM1B1 | COM1B0 |   -    |   -    | WGM11  | WGM10
+	//          |   0    |   0    |   0    |   0    |   -    |   -    |   0    |   0
+	//  TCCR1B  | ICNC1  | ICES1  |   -    | WGM13  | WGM12  |  CS12  |  CS11  |  CS10
+	//          |   -    |   -    |   -    |   0    |   1    |   0    |   0    |   1
+
+	// All COM registers are set to 0, because we don't want a pwm output on a pin
+	// CTC, TOP = OCR1A
+	// >> WGM 13, 12, 11, 10: 0, 1, 0, 0
+	// ICNC1 and ICES1 can be ignored, because no external clock source is used
+	// No Prescaling
+	// CS 12, 11, 10: 0, 0, 1
+    // For more details see chapter 20.14 of Atmega328 datasheet
+
+    _SFR_BYTE(TCCR1A) = 0;
+	_SFR_BYTE(TCCR1B) = _BV(WGM12) | _BV(CS10);
+	_SFR_BYTE(TIMSK1) |= _BV(OCIE1A);
+
+	OCR1A = 20000;
+
+	sei();//allow interrupts
 }
 
 //Routine to send 16bit data to MY9221 driver chips
@@ -132,5 +155,46 @@ void MatrixDriver::setPixel(int x, int y, rgbValues rgb)
 
     PORTD &=~ 0x04;
 }
+
+ISR(TIMER1_COMPA_vect)
+{
+    Md.send16bitData(CmdMode);
+
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+
+    Md.send16bitData(0);
+    Md.send16bitData(0);
+    Md.send16bitData(0);
+    Md.send16bitData(0);
+
+    Md.send16bitData(CmdMode);
+
+    Md.send16bitData(0);
+    Md.send16bitData(0);
+    Md.send16bitData(0);
+    Md.send16bitData(0);
+
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+    Md.send16bitData(0);
+    Md.send16bitData(255);
+
+    Md.latchData();
+    Md.switchOnDrive(1);
+
+    PORTD &=~ 0x04;
+}
+
 
 MatrixDriver Md;
