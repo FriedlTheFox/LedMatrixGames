@@ -10,6 +10,11 @@
 
 
 // MY9221 driver interfaces 
+#define MY9221_DI   PORTB0
+#define MY9221_DCKI PORTB1
+
+#define MY9221_DDR  DDRB
+#define MY9221_PORT PORTB
 
 #define DDR_Data  DDRB
 #define DDR_Clk   DDRB
@@ -21,11 +26,14 @@
 #define BIT_Clk   0x02
 
 // 3-to-8 Decoder Lines
+#define DEC_A0 PORTD5
+#define DEC_A1 PORTD6
+#define DEC_A2 PORTD7
+#define DEC_E3 PORTD7
 
-#define DDR_Lines  DDRD
-#define PORT_Lines PORTD
-#define BIT_Lines  0xF0
-#define switchOffDrive	{PORT_Lines &=~ 0x80;}
+// assume that all decoder pins are on the same port
+#define DEC_DDR DDRD
+#define DEC_PORT PORTD
 
 #define CmdMode 0b0000000000000000
 
