@@ -1,2 +1,4 @@
-Files are from the SeeedStudio Wiki:
-http://www.seeedstudio.com/wiki/Rainbowduino
+Files are from the following websites:
+
+- http://www.seeedstudio.com/wiki/Rainbowduino
+- http://www.atmel.com/
