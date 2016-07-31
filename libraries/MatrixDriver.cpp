@@ -17,7 +17,8 @@ void MatrixDriver::init()
     MY9221_DDR |= _BV(MY9221_DI) | _BV(MY9221_DCKI);
     MY9221_PORT &=~ (_BV(MY9221_DI) | _BV(MY9221_DCKI));
 
-    clearDisplay();
+    // init the line counter
+    m_currentLine = 0;
 
     // use timer1 to create a task which gets called every 100us
     cli();//stop interrupts
@@ -47,125 +48,108 @@ void MatrixDriver::init()
 }
 
 // routine to send 16bit data to MY9221 driver chips
-
-void MatrixDriver::send16bitData(unsigned int data)
+inline void MatrixDriver::send16bitData(uint16_t data)
 {
-    for(unsigned char i=0;i<16;i++)
-    {
-        if(data&0x8000)
-        {
-            PORT_Data |= BIT_Data;
-        }
-        else
-        {
-            PORT_Data &=~ BIT_Data;
-        }
-
-        PORT_Clk ^= BIT_Clk;
-        data <<= 1;
-    }
+	for (uint8_t i=15; i<16; i--) { // i will overflow to 255 after 0
+		if (data & (1 << i)) {
+			MY9221_PORT |= _BV(MY9221_DI);
+		} else {
+			MY9221_PORT &=~ _BV(MY9221_DI);
+		}
+		MY9221_PORT ^= _BV(MY9221_DCKI);
+	}
 }
 
 // latch routine for MY9221 data exchange
-
-void MatrixDriver::latchData(void)
+inline void MatrixDriver::latchData(void)
 {
-    PORT_Data &=~ BIT_Data;
-
+	MY9221_PORT &=~ _BV(MY9221_DI);
     delayMicroseconds(10);
-    switchOffDrive;
-    for(unsigned char i=0;i<8;i++)
-    {
-        PORT_Data ^= BIT_Data;
+    for(unsigned char i=0;i<8;i++) {
+    	MY9221_PORT ^= _BV(MY9221_DI);
     }
 } 
 
-void MatrixDriver::switchOnDrive(unsigned char line)
-{
-  unsigned char LineBits = ((line)<<4);
-  PORT_Lines &=~ BIT_Lines;
-  PORT_Lines |= LineBits;
-  PORT_Lines |= 0x80;
-}
-
-// clear MY9221 lines. Internally used for avoiding flicker. This is not the same as blank disply.
-
-void MatrixDriver::clearDisplay(void)
-{
-    unsigned char i=0;
-    unsigned char f=0;
-
-    send16bitData(CmdMode);
-    PORT_Data &=~ BIT_Data; // bitwise and not; change input
-    for(i=0;i<192;i++)
-    {
-        {
-            PORT_Clk ^= BIT_Clk;
-        }
-    }
-
-    send16bitData(CmdMode);
-    PORT_Data &=~ BIT_Data;
-    for(i=0;i<192;i++)
-    {
-        {
-            PORT_Clk ^= BIT_Clk;
-        }
-    }
-    latchData();
-
-}
 
 // update one line
 
-void MatrixDriver::updateLine(int lineNumber)
+void MatrixDriver::updateLine()
 {
+    unsigned char i, k, lineBits;
+
+
+    // disable decoder while configuring the next line
+    DEC_PORT &=~ _BV(DEC_E3);
+
+    // clear the MY9221 before we send the data for the next line
+    for (k=0;k<2;k++) {
+		send16bitData(CmdMode);
+		MY9221_PORT &=~ _BV(MY9221_DI);
+		for(i=0;i<192;i++) {
+			// toggle clock pin
+			MY9221_PORT ^= _BV(MY9221_DCKI);
+		}
+    }
+
+    latchData();
+
+    // now send the real data
     // first data segment for the 2nd MY9221 chip
-    Md.send16bitData(CmdMode);
+    send16bitData(CmdMode);
     // BLUE segment
-    Md.send16bitData(0);    // A3 --> BLUE8
-    Md.send16bitData(255);  // B3 --> BLUE7
-    Md.send16bitData(0);    // C3 --> BLUE6
-    Md.send16bitData(255);  // A2 --> BLUE5
-    Md.send16bitData(0);    // B2 --> BLUE4
-    Md.send16bitData(255);  // C2 --> BLUE3
-    Md.send16bitData(0);    // A1 --> BLUE2
-    Md.send16bitData(255);  // B1 --> BLUE1
+    send16bitData(0);    // A3 --> BLUE8
+    send16bitData(255);  // B3 --> BLUE7
+    send16bitData(0);    // C3 --> BLUE6
+    send16bitData(255);  // A2 --> BLUE5
+    send16bitData(0);    // B2 --> BLUE4
+    send16bitData(255);  // C2 --> BLUE3
+    send16bitData(0);    // A1 --> BLUE2
+    send16bitData(255);  // B1 --> BLUE1
     // GREEN segment
-    Md.send16bitData(0);    // C1 --> GREEN8
-    Md.send16bitData(0);    // A0 --> GREEN7
-    Md.send16bitData(0);    // B0 --> GREEN6
-    Md.send16bitData(0);    // C0 --> GREEN5
+    send16bitData(0);    // C1 --> GREEN8
+    send16bitData(0);    // A0 --> GREEN7
+    send16bitData(0);    // B0 --> GREEN6
+    send16bitData(0);    // C0 --> GREEN5
 
     // second data segment for the 1nd MY9221 chip
-    Md.send16bitData(CmdMode);
+    send16bitData(CmdMode);
     // GREEN segment
-    Md.send16bitData(0);    // A3 --> GREEN4
-    Md.send16bitData(0);    // B3 --> GREEN3
-    Md.send16bitData(0);    // C3 --> GREEN2
-    Md.send16bitData(0);    // A2 --> GREEN1
+    send16bitData(0);    // A3 --> GREEN4
+    send16bitData(0);    // B3 --> GREEN3
+    send16bitData(0);    // C3 --> GREEN2
+    send16bitData(0);    // A2 --> GREEN1
     // RED segment
-    Md.send16bitData(0);    // B2 --> RED8
-    Md.send16bitData(255);  // C2 --> RED7
-    Md.send16bitData(0);    // A1 --> RED6
-    Md.send16bitData(255);  // B1 --> RED5
-    Md.send16bitData(0);    // C1 --> RED4
-    Md.send16bitData(255);  // A0 --> RED3
-    Md.send16bitData(0);    // B0 --> RED2
-    Md.send16bitData(255);  // C0 --> RED1
+    send16bitData(0);    // B2 --> RED8
+    send16bitData(255);  // C2 --> RED7
+    send16bitData(0);    // A1 --> RED6
+    send16bitData(255);  // B1 --> RED5
+    send16bitData(0);    // C1 --> RED4
+    send16bitData(255);  // A0 --> RED3
+    send16bitData(0);    // B0 --> RED2
+    send16bitData(255);  // C0 --> RED1
 
     // data transfered and latch it
-    Md.latchData();
+    latchData();
 
-    // change the line (?)
-    // TODO: switch from "switchOnDrive" to "setMatrixLine(lineNumber)"
-    Md.switchOnDrive(1);
-    PORTD &=~ 0x04;
+    // change the line. we have 8 lines. m_currentLine uses therefor 3 bits
+    // A0, A1, A2 used consecutive ports. we can use the linenumber to switch the ports
+    lineBits = ((m_currentLine) << DEC_A0); // DEC_A0 is the first pin
+    DEC_PORT &=~ lineBits;
+    DEC_PORT |= lineBits;
+
+    // enable the decoder
+    DEC_PORT |= _BV(DEC_E3);
+
+    // increment line number and enable decoder
+    m_currentLine++;
+    if (8 >= m_currentLine) {
+    	m_currentLine = 0;
+    }
 }
 
 ISR(TIMER1_COMPA_vect)
 {
-    Md.updateLine(1);
+    Md.updateLine();
 }
 
 
