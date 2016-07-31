@@ -5,49 +5,53 @@
 #include "MatrixDriver.h"
 
 // init the Port lines and invoke timer 1 configuration
-
 void MatrixDriver::init()
 {
-
-    // set all decoder lines as output and set them to LOW
-    DEC_DDR |= _BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3);
-    DEC_PORT &=~ (_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3));
 
     // set all driver lines as output and set them to LOW
     MY9221_DDR |= _BV(MY9221_DI) | _BV(MY9221_DCKI);
     MY9221_PORT &=~ (_BV(MY9221_DI) | _BV(MY9221_DCKI));
 
+    // set all decoder lines as output and set them to LOW
+    DEC_DDR |= _BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3);
+    DEC_PORT &=~ (_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3));
+
     // init the line counter
     m_currentLine = 0;
 
     // use timer1 to create a task which gets called every 100us
-    cli();//stop interrupts
+    cli(); //stop interrupts
 
-    // Register |   7    |   6    |   5    |   4    |   3    |   2    |   1    |   0
-    //----------+--------+--------+--------+--------+--------+--------+--------+------
-    //  TCCR1A  | COM1A1 | COM1A0 | COM1B1 | COM1B0 |   -    |   -    | WGM11  | WGM10
-    //          |   0    |   0    |   0    |   0    |   -    |   -    |   0    |   0
-    //  TCCR1B  | ICNC1  | ICES1  |   -    | WGM13  | WGM12  |  CS12  |  CS11  |  CS10
-    //          |   -    |   -    |   -    |   0    |   1    |   0    |   0    |   1
-
-    // All COM registers are set to 0, because we don't want a pwm output on a pin
-    // CTC, TOP = OCR1A
-    // >> WGM 13, 12, 11, 10: 0, 1, 0, 0
-    // ICNC1 and ICES1 can be ignored, because no external clock source is used
-    // No Prescaling
-    // CS 12, 11, 10: 0, 0, 1
-    // For more details see chapter 20.14 of Atmega328 datasheet
-
+    /*
+    |----------|--------|--------|--------|--------|-------|------|-------|-------|
+    | Register |   7    |   6    |   5    |   4    |   3   |  2   |   1   |   0   |
+    |----------|--------|--------|--------|--------|-------|------|-------|-------|
+    | TCCR1A   | COM1A1 | COM1A0 | COM1B1 | COM1B0 | -     | -    | WGM11 | WGM10 |
+    |          | 0      | 0      | 0      | 0      | -     | -    | 0     | 0     |
+    |----------|--------|--------|--------|--------|-------|------|-------|-------|
+    | TCCR1B   | ICNC1  | ICES1  | -      | WGM13  | WGM12 | CS12 | CS11  | CS10  |
+    |          | -      | -      | -      | 0      | 1     | 0    | 0     | 1     |
+    |----------|--------|--------|--------|--------|-------|------|-------|-------|
+    
+    All COM registers are set to 0, because we don't want a pwm output on a pin
+    CTC, TOP = OCR1A
+    >> WGM 13, 12, 11, 10: 0, 1, 0, 0
+    ICNC1 and ICES1 can be ignored, because no external clock source is used
+    No Prescaling
+    CS 12, 11, 10: 0, 0, 1
+    For more details see chapter 20.14 of Atmega328 datasheet
+    */
+    
     _SFR_BYTE(TCCR1A) = 0;
     _SFR_BYTE(TCCR1B) = _BV(WGM12) | _BV(CS10);
     _SFR_BYTE(TIMSK1) |= _BV(OCIE1A);
 
     OCR1A = 20000;
 
-    sei();//allow interrupts
+    sei(); //allow interrupts
 }
 
-// routine to send 16bit data to MY9221 driver chips
+// routine to send 16bit data to MY9221 driver chip
 inline void MatrixDriver::send16bitData(uint16_t data)
 {
 	for (uint8_t i=15; i<16; i--) { // i will overflow to 255 after 0
@@ -71,12 +75,10 @@ inline void MatrixDriver::latchData(void)
 } 
 
 
-// update one line
-
+// update one line of the matrix
 void MatrixDriver::updateLine()
 {
     unsigned char i, k, lineBits;
-
 
     // disable decoder while configuring the next line
     DEC_PORT &=~ _BV(DEC_E3);
