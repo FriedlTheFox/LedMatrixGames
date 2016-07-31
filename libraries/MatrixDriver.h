@@ -16,15 +16,6 @@
 #define MY9221_DDR  DDRB
 #define MY9221_PORT PORTB
 
-#define DDR_Data  DDRB
-#define DDR_Clk   DDRB
-
-#define PORT_Data PORTB
-#define PORT_Clk  PORTB
-
-#define BIT_Data  0x01
-#define BIT_Clk   0x02
-
 // 3-to-8 Decoder Lines
 #define DEC_A0 PORTD4
 #define DEC_A1 PORTD5
@@ -53,14 +44,12 @@ class MatrixDriver
 {
 public:
     void init();
-    void send16bitData(unsigned int data);
-    void latchData(void);
-    void switchOnDrive(unsigned char line);
-    void clearDisplay(void); //Is not made private method as used in ISR. Use this like a private method.
-    void updateLine(int lineNumber);
+    void updateLine(); //called from ISR. treat like private
 
 private:
-
+    uint8_t m_currentLine;
+    inline void send16bitData(uint16_t data);
+    inline void latchData(void);
 };
 
 extern MatrixDriver Md;
