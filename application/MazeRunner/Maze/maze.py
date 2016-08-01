@@ -56,6 +56,6 @@ class Maze():
 
 	def generateMazeRecursiveBacktracker(self):
 
-		self.field = no.chararray(self.dimension)
+		self.field = np.chararray(self.dimension)
 		self.field[:] = '#'
 
