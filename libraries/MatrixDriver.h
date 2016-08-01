@@ -8,9 +8,27 @@
 #include <Arduino.h>
 #include <avr/pgmspace.h>
 
-'''
+/*
+DEBUG
+*/
+#define DEBUG 1
+
+#ifdef DEBUG
+	#define DEBUG_DDR  DDRC	  // direction
+	#define DEBUG_PORT PORTC  // active/passive
+
+	#define DEBUG_DI   PORTC0 // debug data
+	#define	DEBUG_DCKI PORTC1 // debug clock
+
+	#define DEBUG_DEC_A0 PORTC2
+	#define DEBUG_DEC_A1 PORTC3
+	#define DEBUG_DEC_A2 PORTC4
+	#define DEBUG_DEC_E3 PORTC5
+#endif
+
+/*
 REGISTER
-'''
+*/
 
 // MY9221 :: 12-Channel LED Driver
 #define MY9221_DI   PORTB0	// data
@@ -50,9 +68,9 @@ E1 = L and E2 = L
 #define DEC_DDR DDRD
 #define DEC_PORT PORTD
 
-'''
+/*
 DATA
-'''
+*/
 
 // MY9221 command
 /*
@@ -97,9 +115,9 @@ DATA
 */
 #define CmdMode 0b0000000000000000
 
-'''
+/*
 DATA TYPES
-'''
+*/
 
 // structure for the RGB definition
 typedef struct 
@@ -112,9 +130,9 @@ typedef struct
 // rgbValues MatrixBuffer[8][8];
 
 
-'''
+/*
 CLASSES and METHODS
-'''
+*/
 
 class MatrixDriver
 {

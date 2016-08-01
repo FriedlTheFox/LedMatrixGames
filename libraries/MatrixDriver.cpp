@@ -7,14 +7,25 @@
 // init the Port lines and invoke timer 1 configuration
 void MatrixDriver::init()
 {
+    #ifdef DEBUG
+        DEBUG_DDR  |=  ((1 << DEBUG_DI) | (1 << DEBUG_DCKI) | 
+                        (1 << DEBUG_DEC_A0) | (1 << DEBUG_DEC_A1) | (1 << DEBUG_DEC_A2) | 
+                        (1 << DEBUG_DEC_E3)); // outputs
+        DEBUG_PORT &= ~((1 << DEBUG_DI) | (1 << DEBUG_DCKI) | 
+                        (1 << DEBUG_DEC_A0) | (1 << DEBUG_DEC_A1) | (1 << DEBUG_DEC_A2) | 
+                        (1 << DEBUG_DEC_E3)); // LOW
+        // port |=  (1 << bit number); // set   the bit
+        // port &= ~(1 << bit number); // clear the bit
+    #endif
+
 
     // set all driver lines as output and set them to LOW
-    MY9221_DDR |= _BV(MY9221_DI) | _BV(MY9221_DCKI);
-    MY9221_PORT &=~ (_BV(MY9221_DI) | _BV(MY9221_DCKI));
+    MY9221_DDR  |=   _BV(MY9221_DI) | _BV(MY9221_DCKI);     // outputs
+    MY9221_PORT &= ~(_BV(MY9221_DI) | _BV(MY9221_DCKI));    // LOW
 
-    // set all decoder lines as output and set them to LOW
-    DEC_DDR |= _BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3);
-    DEC_PORT &=~ (_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3));
+    // decoder lines
+    DEC_DDR  |=   _BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3);    // outputs
+    DEC_PORT &= ~(_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3));   // LOW
 
     // init the line counter
     m_currentLine = 0;
@@ -151,7 +162,10 @@ void MatrixDriver::updateLine()
 
 ISR(TIMER1_COMPA_vect)
 {
-    Md.updateLine();
+    //Md.updateLine();
+    #ifdef DEBUG
+        DEBUG_PORT ^= (1 << (DEBUG_DCKI)); // toggle the debug clock
+    #endif
 }
 
 
