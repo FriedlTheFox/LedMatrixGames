@@ -7,16 +7,8 @@
 // init the Port lines and invoke timer 1 configuration
 void MatrixDriver::init()
 {
-    #ifdef DEBUG
-        DEBUG_DDR  |=  ((1 << DEBUG_DI) | (1 << DEBUG_DCKI) | 
-                        (1 << DEBUG_DEC_A0) | (1 << DEBUG_DEC_A1) | (1 << DEBUG_DEC_A2) | 
-                        (1 << DEBUG_DEC_E3)); // outputs
-        DEBUG_PORT &= ~((1 << DEBUG_DI) | (1 << DEBUG_DCKI) | 
-                        (1 << DEBUG_DEC_A0) | (1 << DEBUG_DEC_A1) | (1 << DEBUG_DEC_A2) | 
-                        (1 << DEBUG_DEC_E3)); // LOW
-        // port |=  (1 << bit number); // set   the bit
-        // port &= ~(1 << bit number); // clear the bit
-    #endif
+    // port |=  (1 << bit number); // set   the bit
+    // port &= ~(1 << bit number); // clear the bit
 
 
     // set all driver lines as output and set them to LOW
@@ -27,97 +19,155 @@ void MatrixDriver::init()
     DEC_DDR  |=   _BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3);    // outputs
     DEC_PORT &= ~(_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2) | _BV(DEC_E3));   // LOW
 
-    // init the line counter
-    m_currentLine = 0;
-
     // use timer1 to create a task which gets called every 100us
     cli(); //stop interrupts
 
     /*
-    |----------|--------|--------|--------|--------|-------|------|-------|-------|
-    | Register |   7    |   6    |   5    |   4    |   3   |  2   |   1   |   0   |
-    |----------|--------|--------|--------|--------|-------|------|-------|-------|
-    | TCCR1A   | COM1A1 | COM1A0 | COM1B1 | COM1B0 | -     | -    | WGM11 | WGM10 |
-    |          | 0      | 0      | 0      | 0      | -     | -    | 0     | 0     |
-    |----------|--------|--------|--------|--------|-------|------|-------|-------|
-    | TCCR1B   | ICNC1  | ICES1  | -      | WGM13  | WGM12 | CS12 | CS11  | CS10  |
-    |          | -      | -      | -      | 0      | 1     | 0    | 0     | 1     |
-    |----------|--------|--------|--------|--------|-------|------|-------|-------|
+    TCCR1A/B/C (Timer/Counter1 Control Regiser A/B/C
+    |-----------|--------|--------|--------|--------|-------|------|-------|-------|
+    |  Register |   7    |   6    |   5    |   4    |   3   |  2   |   1   |   0   |
+    |-----------|--------|--------|--------|--------|-------|------|-------|-------|
+    | TCCR1A    | COM1A1 | COM1A0 | COM1B1 | COM1B0 | -     | -    | WGM11 | WGM10 |
+    | bit value | 0      | 0      | 0      | 0      | -     | -    | 0     | 0     |
+    |-----------|--------|--------|--------|--------|-------|------|-------|-------|
+    | TCCR1B    | ICNC1  | ICES1  | -      | WGM13  | WGM12 | CS12 | CS11  | CS10  |
+    | bit value | -      | -      | -      | 0      | 1     | 0    | 0     | 1     |
+    |-----------|--------|--------|--------|--------|-------|------|-------|-------|
+    | TCCR1C    | FOC1A  | FOC1B  | -      | -      | -     | -    | -     | -     |
+    | bit value | 0      | 0      | -      | -      | -     | -    | -     | -     |
+    |-----------|--------|--------|--------|--------|-------|------|-------|-------|
     
-    All COM registers are set to 0, because we don't want a pwm output on a pin
-    CTC, TOP = OCR1A
-    >> WGM 13, 12, 11, 10: 0, 1, 0, 0
-    ICNC1 and ICES1 can be ignored, because no external clock source is used
-    No Prescaling
-    CS 12, 11, 10: 0, 0, 1
-    For more details see chapter 20.14 of Atmega328 datasheet
+    COM1A1, COM1A0/COM1B1, COM1B0 (Compare Output Mode Bits)
+    --> 0b0000 : normal port operation, OC1A/OC1B disconnected
+
+    WGM13, WGM12, WGM11, WGM10 (Waveform Generation Mode Bits)
+    --> 0b0100 : Clear Timer on Compare match (CTC); TOP = OCR1A; update of OCR1x at immediate; TOV1 Flag set on MAX
+
+    ICNC1 (Input Capture Noise Canceler)
+    --> 0b0    : ICP1 is not used. Filter is disabled.
+
+    ICES1 (Input Capture Edge Select)
+    --> 0b0    : ICP1 is not used. 0 = falling edge; 1 = rising edge
+
+    CS12, CS11, CS10 (Clock Select)
+    --> 0b001  : clk/1 (no prescaling)
+
+    FOC1A, FOC1B (Force Output Compare for Channel A/B)
+    --> 0b00   : WGM13:0 must be specifies a non_PWM mode
     */
     
-    _SFR_BYTE(TCCR1A) = 0;
-    _SFR_BYTE(TCCR1B) = _BV(WGM12) | _BV(CS10);
-    _SFR_BYTE(TIMSK1) |= _BV(OCIE1A);
+    TCCR1A = 0x00;
+    TCCR1B = (1 << WGM12) | (1 << CS10);
+    TCCR1C = 0x00;
 
-    OCR1A = 20000;
+    /*
+    TCNT1H, TCNT1L (Timer/Counter1)
+    */
 
-    sei(); //allow interrupts
+    /*
+    OCR1AH, OCR1AL, OCR1BH, OCR1BL (Output Compare Register 1 A/B)
+    Register contain a 16 bit value that is compared with the counter value TCNT1
+    
+    OCR1A = external clock * time between events 
+    100us --> 16MHz * 0,0001s = 1600
+    */
+    OCR1A = 1600;
+
+
+    /*
+    TIMSK1 (Timer/Counter1 Interrupt Mask Register)
+    |-----------|---|---|-------|---|---|--------|--------|-------|
+    |  Register | 7 | 6 |   5   | 4 | 3 |   2    |   1    |   0   |
+    |-----------|---|---|-------|---|---|--------|--------|-------|
+    | TCCR1A    | - | - | ICIE1 | - | - | OCIE1B | OCIE1A | TOIE1 |
+    | bit value | - | - | 0     | - | - | 0      | 1      | 0     |
+    |-----------|---|---|-------|---|---|--------|--------|-------|
+    ICIE1 (Input Captre Interrupt Enable)
+    --> 0b?  : ???
+    OCIE1B, OCIE1A (Output Compare B/A Match Interrupt Enable)
+    --> 0b01 : Interrupt enable for A. OCF1A/B - TIFR1
+    TPOE1 (Overflow Interrupt Enable)
+    --> 0b0  : Interrupt disable.
+    */
+    TIMSK1 |= (1 << OCIE1A);
+
+    /*
+    TIFR1 (Iterrupt Flag Register)
+    */
+
+
+    sei(); // allow interrupts
 }
 
-// routine to send 16bit data to MY9221 driver chip
+// routine to send 16 bit data to MY9221 driver chip
 inline void MatrixDriver::send16bitData(uint16_t data)
 {
-	for (uint8_t i=15; i<16; i--) { // i will overflow to 255 after 0
-		if (data & (1 << i)) {
-			MY9221_PORT |= _BV(MY9221_DI);
-		} else {
-			MY9221_PORT &=~ _BV(MY9221_DI);
+	for (uint8_t i=15; i<16; i--)            // decreasing 15,14,..,1,0,255
+    {
+		if (data & (1 << i))                 // if the i-bit of data equal 1
+        {
+			MY9221_PORT |= _BV(MY9221_DI);   // data to 1
+        }
+		else                                 // if the i-bit of data equal 0
+        {
+			MY9221_PORT &=~ _BV(MY9221_DI);  // data to 0
 		}
-		MY9221_PORT ^= _BV(MY9221_DCKI);
+		MY9221_PORT ^= _BV(MY9221_DCKI);     // toggle clock
 	}
 }
 
 // latch routine for MY9221 data exchange
 inline void MatrixDriver::latchData(void)
 {
-	MY9221_PORT &=~ _BV(MY9221_DI);
-    delayMicroseconds(10);
-    for(unsigned char i=0;i<8;i++) {
-    	MY9221_PORT ^= _BV(MY9221_DI);
+    // 1. step
+                                           // keeping clock at a fixed level
+	MY9221_PORT &=~ _BV(MY9221_DI);        // set data to 0
+    delayMicroseconds(1);                  // wait Tstart > 220us
+    // 2. step
+    for(unsigned char i=0;i<8;i++)         // send four data pulses (tH>70ns, tL>230ns)
+    {
+    	MY9221_PORT ^= _BV(MY9221_DI);     // toggle data
     }
+    // 3. step
+                                           // data is loaded in the latch register
+    delayMicroseconds(1);                  // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
 } 
 
 
 // update one line of the matrix
-void MatrixDriver::updateLine()
+void MatrixDriver::updateLine(uint8_t m_currentLine)
 {
-    unsigned char i, k, lineBits;
+    // this function call needs 1,936ms
 
-    // disable decoder while configuring the next line
+    // disable decoder while configuring the next line (E3 = LOW)
     DEC_PORT &=~ _BV(DEC_E3);
 
-    // clear the MY9221 before we send the data for the next line
-    for (k=0;k<2;k++) {
-		send16bitData(CmdMode);
-		MY9221_PORT &=~ _BV(MY9221_DI);
-		for(i=0;i<192;i++) {
-			// toggle clock pin
-			MY9221_PORT ^= _BV(MY9221_DCKI);
+    /*
+    // clear the MY9221 before we send the data for the current line
+    for (unsigned char k=0;k<2;k++)           // run the sequence two times for two MY9221 chips
+    {
+		send16bitData(CmdMode);               // send CmdMode command
+		MY9221_PORT &=~ _BV(MY9221_DI);       // set data to 0
+		for(unsigned char i=0;i<192;i++)      // without data changes iterate the 192 bits
+        {  
+			MY9221_PORT ^= _BV(MY9221_DCKI);  // toggle clock pin
 		}
     }
+    latchData();                              // latch the data
+    */
 
-    latchData();
-
-    // now send the real data
+    // send the new data
     // first data segment for the 2nd MY9221 chip
     send16bitData(CmdMode);
     // BLUE segment
     send16bitData(0);    // A3 --> BLUE8
-    send16bitData(255);  // B3 --> BLUE7
+    send16bitData(0);  // B3 --> BLUE7
     send16bitData(0);    // C3 --> BLUE6
-    send16bitData(255);  // A2 --> BLUE5
+    send16bitData(0);  // A2 --> BLUE5
     send16bitData(0);    // B2 --> BLUE4
-    send16bitData(255);  // C2 --> BLUE3
+    send16bitData(10);  // C2 --> BLUE3
     send16bitData(0);    // A1 --> BLUE2
-    send16bitData(255);  // B1 --> BLUE1
+    send16bitData(0);  // B1 --> BLUE1
     // GREEN segment
     send16bitData(0);    // C1 --> GREEN8
     send16bitData(0);    // A0 --> GREEN7
@@ -129,43 +179,41 @@ void MatrixDriver::updateLine()
     // GREEN segment
     send16bitData(0);    // A3 --> GREEN4
     send16bitData(0);    // B3 --> GREEN3
-    send16bitData(0);    // C3 --> GREEN2
+    send16bitData(10);    // C3 --> GREEN2
     send16bitData(0);    // A2 --> GREEN1
     // RED segment
-    send16bitData(0);    // B2 --> RED8
-    send16bitData(255);  // C2 --> RED7
-    send16bitData(0);    // A1 --> RED6
+    send16bitData(5);    // B2 --> RED8
+    send16bitData(10);  // C2 --> RED7
+    send16bitData(25);    // A1 --> RED6
     send16bitData(255);  // B1 --> RED5
     send16bitData(0);    // C1 --> RED4
-    send16bitData(255);  // A0 --> RED3
+    send16bitData(0);  // A0 --> RED3
     send16bitData(0);    // B0 --> RED2
     send16bitData(255);  // C0 --> RED1
 
     // data transfered and latch it
     latchData();
 
-    // change the line. we have 8 lines. m_currentLine uses therefor 3 bits
-    // A0, A1, A2 used consecutive ports. we can use the linenumber to switch the ports
+    // activate the current line
+    //   A2,A1,A0 
+    // 1. 0b000
+    // ..   .. 
+    // 8. 0b111
+
+    DEC_PORT &= ~(_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2)); // set all pins to LOW
+    /*
     lineBits = ((m_currentLine) << DEC_A0); // DEC_A0 is the first pin
     DEC_PORT &=~ lineBits;
     DEC_PORT |= lineBits;
+    */
 
-    // enable the decoder
+    // enable the decoder  (E3 = HIGH)
     DEC_PORT |= _BV(DEC_E3);
-
-    // increment line number and enable decoder
-    m_currentLine++;
-    if (8 >= m_currentLine) {
-    	m_currentLine = 0;
-    }
 }
 
 ISR(TIMER1_COMPA_vect)
 {
-    //Md.updateLine();
-    #ifdef DEBUG
-        DEBUG_PORT ^= (1 << (DEBUG_DCKI)); // toggle the debug clock
-    #endif
+    //Md.updateLine(1);
 }
 
 

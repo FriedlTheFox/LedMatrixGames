@@ -8,23 +8,7 @@
 #include <Arduino.h>
 #include <avr/pgmspace.h>
 
-/*
-DEBUG
-*/
-#define DEBUG 1
-
-#ifdef DEBUG
-	#define DEBUG_DDR  DDRC	  // direction
-	#define DEBUG_PORT PORTC  // active/passive
-
-	#define DEBUG_DI   PORTC0 // debug data
-	#define	DEBUG_DCKI PORTC1 // debug clock
-
-	#define DEBUG_DEC_A0 PORTC2
-	#define DEBUG_DEC_A1 PORTC3
-	#define DEBUG_DEC_A2 PORTC4
-	#define DEBUG_DEC_E3 PORTC5
-#endif
+#define DEBUG
 
 /*
 REGISTER
@@ -67,6 +51,27 @@ E1 = L and E2 = L
 // assume that all decoder pins are on the same port
 #define DEC_DDR DDRD
 #define DEC_PORT PORTD
+
+/*
+DEBUG
+*/
+#ifdef DEBUG
+	// data & clock
+	#define MY9221_DI   PORTC0  
+	#define	MY9221_DCKI PORTC1  
+
+	#define MY9221_DDR  DDRC	
+	#define MY9221_PORT PORTC   
+
+	// decoder
+	#define DEC_A0 PORTC3
+	#define DEC_A1 PORTC4
+	#define DEC_A2 PORTC5
+	#define DEC_E3 PORTC2
+
+	#define DEC_DDR DDRC
+	#define DEC_PORT PORTC
+#endif
 
 /*
 DATA
@@ -137,13 +142,12 @@ CLASSES and METHODS
 class MatrixDriver
 {
 public:
-    void init();		// inti driver
-    void updateLine();	// called from ISR. treat like private
+    void init();								// inti driver
+    void updateLine(uint8_t m_currentLine);		// called from ISR. treat like private
 
 private:
-    uint8_t m_currentLine;						// current line number of the matirx display to update
     inline void send16bitData(uint16_t data);	// send data to the MY9221
-    inline void latchData(void);				// latch funtcion for MY9221
+    inline void latchData();					// latch funtcion for MY9221
 };
 
 extern MatrixDriver Md;

@@ -16,6 +16,6 @@ void setup()
 
 void loop() 
 {
-  //delay(500);
-  //Md.updateLine();
+  delay(100);
+  Md.updateLine(1);
 }
