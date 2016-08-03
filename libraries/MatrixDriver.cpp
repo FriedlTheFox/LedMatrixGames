@@ -102,17 +102,19 @@ void MatrixDriver::init()
 // routine to send 16 bit data to MY9221 driver chip
 inline void MatrixDriver::send16bitData(uint16_t data)
 {
+    uint16_t mask = 0x8000;                  // mask to select one bit
 	for (uint8_t i=15; i<16; i--)            // decreasing 15,14,..,1,0,255
     {
-		if (data & (1 << i))                 // if the i-bit of data equal 1
+        if (data & mask)                     // if the masked bit of data is equal 1
         {
 			MY9221_PORT |= _BV(MY9221_DI);   // data to 1
         }
-		else                                 // if the i-bit of data equal 0
+		else                                 // if the masked bit of data is equal 0
         {
 			MY9221_PORT &=~ _BV(MY9221_DI);  // data to 0
 		}
 		MY9221_PORT ^= _BV(MY9221_DCKI);     // toggle clock
+        mask = mask >> 1;                    // shift the mask bit one step right
 	}
 }
 
@@ -122,7 +124,7 @@ inline void MatrixDriver::latchData(void)
     // 1. step
                                            // keeping clock at a fixed level
 	MY9221_PORT &=~ _BV(MY9221_DI);        // set data to 0
-    delayMicroseconds(1);                  // wait Tstart > 220us
+    delayMicroseconds(10);                  // wait Tstart > 220us
     // 2. step
     for(unsigned char i=0;i<8;i++)         // send four data pulses (tH>70ns, tL>230ns)
     {
@@ -130,7 +132,7 @@ inline void MatrixDriver::latchData(void)
     }
     // 3. step
                                            // data is loaded in the latch register
-    delayMicroseconds(1);                  // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
+    delayMicroseconds(10);                  // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
 } 
 
 
@@ -182,10 +184,10 @@ void MatrixDriver::updateLine(uint8_t m_currentLine)
     send16bitData(10);    // C3 --> GREEN2
     send16bitData(0);    // A2 --> GREEN1
     // RED segment
-    send16bitData(5);    // B2 --> RED8
-    send16bitData(10);  // C2 --> RED7
-    send16bitData(25);    // A1 --> RED6
-    send16bitData(255);  // B1 --> RED5
+    send16bitData(0xA5);    // B2 --> RED8
+    send16bitData(0xFF);  // C2 --> RED7
+    send16bitData(0);    // A1 --> RED6
+    send16bitData(0xFF);  // B1 --> RED5
     send16bitData(0);    // C1 --> RED4
     send16bitData(0);  // A0 --> RED3
     send16bitData(0);    // B0 --> RED2
