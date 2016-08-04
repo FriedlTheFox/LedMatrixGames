@@ -141,8 +141,11 @@ void MatrixDriver::updateLine(uint8_t m_currentLine)
 {
     // this function call needs 1,936ms
 
+
     // disable decoder while configuring the next line (E3 = LOW)
+    // in latch() function???
     DEC_PORT &=~ _BV(DEC_E3);
+
 
     /*
     // clear the MY9221 before we send the data for the current line
@@ -193,15 +196,18 @@ void MatrixDriver::updateLine(uint8_t m_currentLine)
     send16bitData(0);    // B0 --> RED2
     send16bitData(255);  // C0 --> RED1
 
+
     // data transfered and latch it
     latchData();
 
     // activate the current line
     // ISSUE #11
     DEC_PORT &= ~(_BV(DEC_A0) | _BV(DEC_A1) | _BV(DEC_A2)); // set all pins to LOW
+    
     /*
-    lineBits = ((m_currentLine) << DEC_A0); // DEC_A0 is the first pin
-    DEC_PORT &=~ lineBits;
+    // check the shift position?!
+    lineBits = ((m_currentLine) << DEC_A0); // shift m_currentline DEC_A0-bits to the left
+    DEC_PORT &=~ lineBits;  
     DEC_PORT |= lineBits;
     */
 
