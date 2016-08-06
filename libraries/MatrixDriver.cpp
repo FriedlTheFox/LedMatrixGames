@@ -137,30 +137,8 @@ inline void MatrixDriver::latchData(void)
 
 
 // update one line of the matrix
-void MatrixDriver::updateLine(uint8_t m_currentLine)
+void MatrixDriver::updateLine(uint8_t lineNumber)
 {
-    // this function call needs 1,936ms
-
-
-    // disable decoder while configuring the next line (E3 = LOW)
-    // in latch() function???
-    DEC_PORT &=~ _BV(DEC_E3);
-
-
-    /*
-    // clear the MY9221 before we send the data for the current line
-    for (unsigned char k=0;k<2;k++)           // run the sequence two times for two MY9221 chips
-    {
-		send16bitData(CmdMode);               // send CmdMode command
-		MY9221_PORT &=~ _BV(MY9221_DI);       // set data to 0
-		for(unsigned char i=0;i<192;i++)      // without data changes iterate the 192 bits
-        {  
-			MY9221_PORT ^= _BV(MY9221_DCKI);  // toggle clock pin
-		}
-    }
-    latchData();                              // latch the data
-    */
-
     // send the new data
     // first data segment for the 2nd MY9221 chip
     send16bitData(CmdMode);
@@ -196,14 +174,16 @@ void MatrixDriver::updateLine(uint8_t m_currentLine)
     send16bitData(0);    // B0 --> RED2
     send16bitData(255);  // C0 --> RED1
 
+    // disable decoder while updating the current line (E3 = LOW)
+    DEC_PORT &=~ _BV(DEC_E3);
 
     // data transfered and latch it
     latchData();
 
     // activate the current line
-    uint8_t lineBits  = (m_currentLine << DEC_A0);  // calculate line bits
-    DEC_PORT &= ~(0b111 << DEC_A0);                 // clear bits in PORT
-    DEC_PORT |= lineBits;                           // set new bits in PORT
+    uint8_t lineBits  = (lineNumber << DEC_A0); // calculate line bits
+    DEC_PORT &= ~(0b111 << DEC_A0);             // clear bits in PORT
+    DEC_PORT |= lineBits;                       // set new bits in PORT
     
     // enable the decoder  (E3 = HIGH)
     DEC_PORT |= _BV(DEC_E3);
@@ -213,6 +193,5 @@ ISR(TIMER1_COMPA_vect)
 {
     //Md.updateLine(1);
 }
-
 
 MatrixDriver Md;
