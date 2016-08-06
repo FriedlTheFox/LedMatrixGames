@@ -16,6 +16,9 @@ void setup()
 
 void loop() 
 {
-  delay(100);
-  Md.updateLine(0);
+	for(uint8_t i=0;i<8;i++)
+	{
+		delay(1);
+		Md.updateLine(i);
+	}
 }
