@@ -16,7 +16,7 @@ const char *byte_to_binary(int x)
     return b;
 }
 
-int main()
+int calculationDecoderLine()
 {
 	char DEC_PORT = 0b10000001;
 	char mask = 0b00111000;
@@ -43,4 +43,33 @@ A0(4), A1(5), A2(6)
 */
 		}
     return 0;
+}
+
+// colors of the RGB led
+struct ledColor 
+{
+	int red;
+	int green; 
+	int blue;
+} rgbValues;
+
+// led definition for the full matrix
+ledColor MatrixBuffer[7][7];
+
+ledColor setLedColor(int red, int green, int blue)
+{
+	rgbValues.red   = red;
+	rgbValues.green = green;
+	rgbValues.blue  = blue;
+	return rgbValues;
+}
+
+int main()
+{
+	printf("Hello Word!\n");
+	MatrixBuffer[0][0] = setLedColor(1,4,3);
+	printf("%d\n", MatrixBuffer[0][0].red);
+	printf("%d\n", MatrixBuffer[0][0].green);
+	printf("%d\n", MatrixBuffer[0][0].blue);
+	return 0;
 }
