@@ -7,8 +7,6 @@
 
 #include <MatrixDriver.h>
 
-rgbValues rgb = {255, 0, 0};
-
 void setup()
 {
   Md.init();
@@ -16,9 +14,21 @@ void setup()
 
 void loop() 
 {
-	for(uint8_t i=0;i<8;i++)
+	// flash buffer
+	Md.flashMatrixBuffer(0x00,0x00,0x00); // BLACK
+	// update Matrix
+	for(char i=0;i<8;i++)
 	{
 		delay(1);
 		Md.updateLine(i);
 	}
+	// flash buffer
+	Md.flashMatrixBuffer(0xFF,0x00,0x00); // RED
+	// update Matrix
+	for(char i=0;i<8;i++)
+	{
+		delay(1);
+		Md.updateLine(i);
+	}
+	
 }
