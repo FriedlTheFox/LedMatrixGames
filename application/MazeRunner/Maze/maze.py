@@ -16,6 +16,14 @@
 import numpy as np
 
 
+try:
+	from ipHelp import IPS, ip_syshook
+	ip_syshook(1)
+
+except ImportError:
+	print 'ipHelp not available'
+	pass
+
 class Maze():
 
 	MOVEUP 		= np.array([0,1])
