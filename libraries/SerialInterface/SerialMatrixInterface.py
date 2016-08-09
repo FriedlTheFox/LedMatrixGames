@@ -4,14 +4,13 @@
 # /*
 #  * ----------------------------------------------------------------------------
 #  * "THE BEER-WARE LICENSE" (Revision 42):
-#  * zwen@posteo.de wrote this file.  As long as you retain this notice you
+#  * zwenson at rocketmail dot con wrote this file.  As long as you retain this notice you
 #  * can do whatever you want with this stuff. If we meet some day, and you think
 #  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
 #  * ----------------------------------------------------------------------------
 #  */
 
-# Generate mazes using different algorithmś https://en.wikipedia.org/wiki/Maze_generation_algorithm
-# Also provide functionality to move through the maze
+# Provide communication over serial port to MatrixDriver.
 
 ################ DEBUG #####################
 try:
