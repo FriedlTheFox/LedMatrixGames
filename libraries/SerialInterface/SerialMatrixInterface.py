@@ -41,7 +41,7 @@ class SerialMatrixInterface():
 	READYTORECEIVE = np.int8(0x01)
 	RECEIVEDROW = np.int8(0x02)
 
-	def __init__(self, port = '/dev/ttyS0' , baud = '9600'):
+	def __init__(self, port = '/dev/ttyS4' , baud = '9600'):
 
 		self.port = port
 		self.baud = baud
