@@ -94,7 +94,6 @@ void MatrixDriver::init()
     TIFR1 (Iterrupt Flag Register)
     */
 
-
     sei(); // allow interrupts
 }
 
@@ -141,9 +140,7 @@ void MatrixDriver::flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue
     {
         for(uint8_t colom=0;colom<8;colom++)
         {   
-            MatrixBufferRed[row][colom] = red;
-            MatrixBufferGreen[row][colom] = green;
-            MatrixBufferBlue[row][colom] = blue;
+            matrixBuffer[row][colom] = {red, green, blue};
         }
     }
 }
@@ -155,36 +152,36 @@ void MatrixDriver::updateLine(uint8_t lineNumber)
     // first data segment for the 2nd MY9221 chip
     send16bitData(CmdMode);
     // BLUE segment
-    send16bitData(MatrixBufferBlue[lineNumber][7]);    // A3 --> BLUE8
-    send16bitData(MatrixBufferBlue[lineNumber][6]);  // B3 --> BLUE7
-    send16bitData(MatrixBufferBlue[lineNumber][5]);    // C3 --> BLUE6
-    send16bitData(MatrixBufferBlue[lineNumber][4]);  // A2 --> BLUE5
-    send16bitData(MatrixBufferBlue[lineNumber][3]);    // B2 --> BLUE4
-    send16bitData(MatrixBufferBlue[lineNumber][2]);  // C2 --> BLUE3
-    send16bitData(MatrixBufferBlue[lineNumber][1]);    // A1 --> BLUE2
-    send16bitData(MatrixBufferBlue[lineNumber][0]);  // B1 --> BLUE1
+    send16bitData(matrixBuffer[lineNumber][7].blue);  // A3 --> BLUE8
+    send16bitData(matrixBuffer[lineNumber][6].blue);  // B3 --> BLUE7
+    send16bitData(matrixBuffer[lineNumber][5].blue);  // C3 --> BLUE6
+    send16bitData(matrixBuffer[lineNumber][4].blue);  // A2 --> BLUE5
+    send16bitData(matrixBuffer[lineNumber][3].blue);  // B2 --> BLUE4
+    send16bitData(matrixBuffer[lineNumber][2].blue);  // C2 --> BLUE3
+    send16bitData(matrixBuffer[lineNumber][1].blue);  // A1 --> BLUE2
+    send16bitData(matrixBuffer[lineNumber][0].blue);  // B1 --> BLUE1
     // GREEN segment
-    send16bitData(MatrixBufferGreen[lineNumber][7]);    // C1 --> GREEN8
-    send16bitData(MatrixBufferGreen[lineNumber][6]);    // A0 --> GREEN7
-    send16bitData(MatrixBufferGreen[lineNumber][5]);    // B0 --> GREEN6
-    send16bitData(MatrixBufferGreen[lineNumber][4]);    // C0 --> GREEN5
+    send16bitData(matrixBuffer[lineNumber][7].green);  // C1 --> GREEN8
+    send16bitData(matrixBuffer[lineNumber][6].green);  // A0 --> GREEN7
+    send16bitData(matrixBuffer[lineNumber][5].green);  // B0 --> GREEN6
+    send16bitData(matrixBuffer[lineNumber][4].green);  // C0 --> GREEN5
 
     // second data segment for the 1nd MY9221 chip
     send16bitData(CmdMode);
     // GREEN segment
-    send16bitData(MatrixBufferGreen[lineNumber][3]);    // A3 --> GREEN4
-    send16bitData(MatrixBufferGreen[lineNumber][2]);    // B3 --> GREEN3
-    send16bitData(MatrixBufferGreen[lineNumber][1]);    // C3 --> GREEN2
-    send16bitData(MatrixBufferGreen[lineNumber][0]);    // A2 --> GREEN1
+    send16bitData(matrixBuffer[lineNumber][3].green);  // A3 --> GREEN4
+    send16bitData(matrixBuffer[lineNumber][2].green);  // B3 --> GREEN3
+    send16bitData(matrixBuffer[lineNumber][1].green);  // C3 --> GREEN2
+    send16bitData(matrixBuffer[lineNumber][0].green);  // A2 --> GREEN1
     // RED segment
-    send16bitData(MatrixBufferRed[lineNumber][7]);    // B2 --> RED8
-    send16bitData(MatrixBufferRed[lineNumber][6]);  // C2 --> RED7
-    send16bitData(MatrixBufferRed[lineNumber][5]);    // A1 --> RED6
-    send16bitData(MatrixBufferRed[lineNumber][4]);  // B1 --> RED5
-    send16bitData(MatrixBufferRed[lineNumber][3]);    // C1 --> RED4
-    send16bitData(MatrixBufferRed[lineNumber][2]);  // A0 --> RED3
-    send16bitData(MatrixBufferRed[lineNumber][1]);    // B0 --> RED2
-    send16bitData(MatrixBufferRed[lineNumber][0]);  // C0 --> RED1
+    send16bitData(matrixBuffer[lineNumber][7].red);  // B2 --> RED8
+    send16bitData(matrixBuffer[lineNumber][6].red);  // C2 --> RED7
+    send16bitData(matrixBuffer[lineNumber][5].red);  // A1 --> RED6
+    send16bitData(matrixBuffer[lineNumber][4].red);  // B1 --> RED5
+    send16bitData(matrixBuffer[lineNumber][3].red);  // C1 --> RED4
+    send16bitData(matrixBuffer[lineNumber][2].red);  // A0 --> RED3
+    send16bitData(matrixBuffer[lineNumber][1].red);  // B0 --> RED2
+    send16bitData(matrixBuffer[lineNumber][0].red);  // C0 --> RED1
 
     // disable decoder while updating the current line (E3 = LOW)
     DEC_PORT &=~ _BV(DEC_E3);

@@ -10,25 +10,17 @@
 void setup()
 {
   Md.init();
+
 }
 
 void loop() 
 {
 	// flash buffer
-	Md.flashMatrixBuffer(0x00,0x00,0x00); // BLACK
+	Md.flashMatrixBuffer(random(0, 150),random(0, 150),random(0, 150));
 	// update Matrix
 	for(char i=0;i<8;i++)
 	{
-		delay(1);
 		Md.updateLine(i);
-	}
-	// flash buffer
-	Md.flashMatrixBuffer(0xFF,0x00,0x00); // RED
-	// update Matrix
-	for(char i=0;i<8;i++)
-	{
 		delay(1);
-		Md.updateLine(i);
 	}
-	
 }
