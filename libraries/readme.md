@@ -13,7 +13,7 @@ This is the library for the Rainbowduino board with the MY9221 led drivers.
 Add a symbolic link in the Arduino library, to use the MartixDriver
 
 ```
-mklink /d "GitHub folder" "Arduino library folder"
+mklink /d "Arduino library folder" "GitHub folder" 
 ```
 
 ## SerialInterface

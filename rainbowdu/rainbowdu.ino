@@ -28,17 +28,18 @@ void loop()
 	// TODO: serial communication
 	while (Serial.available() > 0)
 	{
-		row   = Serial.parseInt();
-		col   = Serial.parseInt();
+		//row   = Serial.parseInt();
+		//col   = Serial.parseInt();
 		
 		red   = Serial.parseInt();
 		green = Serial.parseInt();
 		blue  = Serial.parseInt();
 		if (Serial.read() == '\n')
 		{
-			Md.setMatrixPixel(row, col, red, green, blue);
+			//Md.setMatrixPixel(row, col, red, green, blue);
+			Md.flashMatrixBuffer(red, green, blue);
 		}
-		//Serial.write('check');
+		Serial.write('1\n');
 	}
 
 	// update full matrix with current buffer as fast as possible
