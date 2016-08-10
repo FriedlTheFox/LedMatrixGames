@@ -146,6 +146,14 @@ void MatrixDriver::flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue
     }
 }
 
+// save data on one pixel
+void MatrixDriver::setMatrixPixel(uint8_t row, uint8_t col, uint16_t red, uint16_t green, uint16_t blue)
+{
+    matrixBuffer[row][col].red   = red;
+    matrixBuffer[row][col].green = green;
+    matrixBuffer[row][col].blue  = blue;
+}
+
 // update one line of the matrix
 // t_updateLine = ???
 void MatrixDriver::updateLine(uint8_t lineNumber)
@@ -210,7 +218,6 @@ void MatrixDriver::updateMatrix()
         Md.updateLine(i);
     }
 }
-
 
 ISR(TIMER1_COMPA_vect)
 {

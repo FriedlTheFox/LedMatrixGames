@@ -4,6 +4,7 @@ serial dummy
 
 import time
 import serial
+import random
 
 def OpenSerial():
     return serial.Serial(
@@ -32,26 +33,26 @@ def CheckSerial(ser):
 def CloseSerial(ser):
     ser.close()
    
-def UpdateBuffer(ser, r, g, b, logInfo = True):
-    ser.write(bytes('%s,%s,%s\n' % (r,g,b)))
+def UpdateBuffer(ser, x, y, r, g, b, logInfo = True):
+    ser.write('%s,%s,%s,%s,%s\n' % (x,y,r,g,b))
     if logInfo:
-        print '%s,%s,%s\n' % (r,g,b)
+        print '%s,%s,%s,%s,%s\n' % (x,y,r,g,b)
         
 def CubeInit(ser):
     CubeReset(ser)
-    CubeSetPixelXY(ser,7,0,255,0,0)
-
+    
 def CubeReset(ser):
-    for x in range(8):
-        for y in range(8):
-            ser.write(bytes('%s,%s,0,0,0\n' % (x,y)))
+    ser.write('0,0,0\n')
     
 def Main():
     ser = OpenSerial()
     CheckSerial(ser)
     CubeInit(ser)
 
-    UpdateBuffer(0xFF,0x00,0x00)
+    while True:
+        ser.write('1,1,255,255,255\n')
+        #ser.write('%s,%s,%s,%s,%s\n' % (random.randint(0,7), random.randint(0,7), random.randint(0,150), random.randint(0,150), random.randint(0,150)))
+        time.sleep(1)
 
     CloseSerial(ser)
         

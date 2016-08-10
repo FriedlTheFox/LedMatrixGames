@@ -7,6 +7,9 @@
 
 #include <MatrixDriver.h>
 
+int8_t row   = 0;
+int8_t col   = 0;
+
 int16_t red   = 0x00;
 int16_t green = 0x00;
 int16_t blue  = 0x00;
@@ -17,7 +20,7 @@ void setup()
 	Serial.begin(9600);
 	// init led matrix and clear buffer
 	Md.init();
-  	Md.flashMatrixBuffer(0x00,0x00,0x00);
+  	Md.flashMatrixBuffer(0x10,0x00,0x00);
 }
 
 void loop() 
@@ -25,13 +28,17 @@ void loop()
 	// TODO: serial communication
 	while (Serial.available() > 0)
 	{
+		row   = Serial.parseInt();
+		col   = Serial.parseInt();
+		
 		red   = Serial.parseInt();
 		green = Serial.parseInt();
 		blue  = Serial.parseInt();
 		if (Serial.read() == '\n')
 		{
-			Md.flashMatrixBuffer(red, green, blue);
+			Md.setMatrixPixel(row, col, red, green, blue);
 		}
+		//Serial.write('check');
 	}
 
 	// update full matrix with current buffer as fast as possible
