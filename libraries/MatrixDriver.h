@@ -127,9 +127,10 @@ CLASSES and METHODS
 class MatrixDriver
 {
 public:
-    void init();								// init driver
-    void flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue); 
-    void updateLine(uint8_t m_currentLine);		// update only one given line
+    void init();															// init driver
+    void flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue); 	// put values in the buffer
+    void updateLine(uint8_t m_currentLine);									// update only one given line
+    void updateMatrix();													// update the full matrix
 private:
     inline void send16bitData(uint16_t data);	// send data to the MY9221
     inline void latchData();					// latch funtcion for MY9221

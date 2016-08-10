@@ -69,6 +69,7 @@ void MatrixDriver::init()
     
     OCR1A = external clock * time between events 
     100us --> 16MHz * 0,0001s = 1600
+     10ms --> 16MHz * 0,01s = 160000
     */
     OCR1A = 1600;
 
@@ -122,7 +123,7 @@ inline void MatrixDriver::latchData(void)
     // 1. step
                                            // keeping clock at a fixed level
 	MY9221_PORT &=~ _BV(MY9221_DI);        // set data to 0
-    delayMicroseconds(10);                  // wait Tstart > 220us
+    delayMicroseconds(10);                 // wait Tstart > 220us
     // 2. step
     for(unsigned char i=0;i<8;i++)         // send four data pulses (tH>70ns, tL>230ns)
     {
@@ -130,7 +131,7 @@ inline void MatrixDriver::latchData(void)
     }
     // 3. step
                                            // data is loaded in the latch register
-    delayMicroseconds(10);                  // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
+    delayMicroseconds(10);                 // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
 } 
 
 // save data in buffer
@@ -146,6 +147,7 @@ void MatrixDriver::flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue
 }
 
 // update one line of the matrix
+// t_updateLine = ???
 void MatrixDriver::updateLine(uint8_t lineNumber)
 {
     // send the new data
@@ -198,11 +200,22 @@ void MatrixDriver::updateLine(uint8_t lineNumber)
     DEC_PORT |= _BV(DEC_E3);
 }
 
+// update the full matrix
+// t_updateMatrix = ???
+void MatrixDriver::updateMatrix()
+{
+    // update all lines
+    for(uint8_t i=0;i<8;i++)
+    {
+        Md.updateLine(i);
+    }
+}
 
 
 ISR(TIMER1_COMPA_vect)
 {
-    //Md.updateLine(1);
+    // TODO: check if serial data available
+    // TODO: get serial data and save the values in the buffer
 }
 
 MatrixDriver Md;
