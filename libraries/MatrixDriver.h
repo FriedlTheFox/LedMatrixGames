@@ -121,33 +121,36 @@ DATA
 #define CmdMode 0b0000000000000000
 
 /*
-DATA TYPES
-*/
-
-// structure for the RGB definition
-typedef struct 
-{
-	uint8_t red; 
-	uint8_t green; 
-	uint8_t blue;
-}rgbValues;
-
-// rgbValues MatrixBuffer[8][8];
-
-
-/*
 CLASSES and METHODS
 */
 
 class MatrixDriver
 {
 public:
-    void init();								// inti driver
-    void updateLine(uint8_t m_currentLine);		// called from ISR. treat like private
-
+    void init();															// init driver
+    void flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue); 	// put values in the buffer
+    void updateLine(uint8_t m_currentLine);									// update only one given line
+    void updateMatrix();													// update the full matrix
+    void setMatrixPixel(uint8_t row, uint8_t col, uint16_t red, uint16_t green, uint16_t blue);
 private:
     inline void send16bitData(uint16_t data);	// send data to the MY9221
     inline void latchData();					// latch funtcion for MY9221
+
+/*
+DATA TYPES
+*/
+
+// led color for one pixel
+struct ledColor
+{
+	uint16_t red;
+	uint16_t green;
+	uint16_t blue;
+};
+
+// matix buffer for all 64 leds
+ledColor matrixBuffer[8][8];
+
 };
 
 extern MatrixDriver Md;

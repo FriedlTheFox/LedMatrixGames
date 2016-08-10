@@ -10,7 +10,6 @@ void MatrixDriver::init()
     // port |=  (1 << bit number); // set   the bit
     // port &= ~(1 << bit number); // clear the bit
 
-
     // set all driver lines as output and set them to LOW
     MY9221_DDR  |=   _BV(MY9221_DI) | _BV(MY9221_DCKI);     // outputs
     MY9221_PORT &= ~(_BV(MY9221_DI) | _BV(MY9221_DCKI));    // LOW
@@ -70,6 +69,7 @@ void MatrixDriver::init()
     
     OCR1A = external clock * time between events 
     100us --> 16MHz * 0,0001s = 1600
+     10ms --> 16MHz * 0,01s = 160000
     */
     OCR1A = 1600;
 
@@ -94,7 +94,6 @@ void MatrixDriver::init()
     /*
     TIFR1 (Iterrupt Flag Register)
     */
-
 
     sei(); // allow interrupts
 }
@@ -124,7 +123,7 @@ inline void MatrixDriver::latchData(void)
     // 1. step
                                            // keeping clock at a fixed level
 	MY9221_PORT &=~ _BV(MY9221_DI);        // set data to 0
-    delayMicroseconds(10);                  // wait Tstart > 220us
+    delayMicroseconds(10);                 // wait Tstart > 220us
     // 2. step
     for(unsigned char i=0;i<8;i++)         // send four data pulses (tH>70ns, tL>230ns)
     {
@@ -132,87 +131,98 @@ inline void MatrixDriver::latchData(void)
     }
     // 3. step
                                            // data is loaded in the latch register
-    delayMicroseconds(10);                  // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
+    delayMicroseconds(10);                 // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
 } 
 
+// save data in buffer
+void MatrixDriver::flashMatrixBuffer(uint16_t red, uint16_t green, uint16_t blue)
+{
+    for(uint8_t row=0;row<8;row++)
+    {
+        for(uint8_t colom=0;colom<8;colom++)
+        {   
+            matrixBuffer[row][colom] = {red, green, blue};
+        }
+    }
+}
+
+// save data on one pixel
+void MatrixDriver::setMatrixPixel(uint8_t row, uint8_t col, uint16_t red, uint16_t green, uint16_t blue)
+{
+    matrixBuffer[row][col].red   = red;
+    matrixBuffer[row][col].green = green;
+    matrixBuffer[row][col].blue  = blue;
+}
 
 // update one line of the matrix
-void MatrixDriver::updateLine(uint8_t m_currentLine)
+// t_updateLine = ???
+void MatrixDriver::updateLine(uint8_t lineNumber)
 {
-    // this function call needs 1,936ms
-
-
-    // disable decoder while configuring the next line (E3 = LOW)
-    // in latch() function???
-    DEC_PORT &=~ _BV(DEC_E3);
-
-
-    /*
-    // clear the MY9221 before we send the data for the current line
-    for (unsigned char k=0;k<2;k++)           // run the sequence two times for two MY9221 chips
-    {
-		send16bitData(CmdMode);               // send CmdMode command
-		MY9221_PORT &=~ _BV(MY9221_DI);       // set data to 0
-		for(unsigned char i=0;i<192;i++)      // without data changes iterate the 192 bits
-        {  
-			MY9221_PORT ^= _BV(MY9221_DCKI);  // toggle clock pin
-		}
-    }
-    latchData();                              // latch the data
-    */
-
     // send the new data
     // first data segment for the 2nd MY9221 chip
     send16bitData(CmdMode);
     // BLUE segment
-    send16bitData(0);    // A3 --> BLUE8
-    send16bitData(0);  // B3 --> BLUE7
-    send16bitData(0);    // C3 --> BLUE6
-    send16bitData(0);  // A2 --> BLUE5
-    send16bitData(0);    // B2 --> BLUE4
-    send16bitData(10);  // C2 --> BLUE3
-    send16bitData(0);    // A1 --> BLUE2
-    send16bitData(0);  // B1 --> BLUE1
+    send16bitData(matrixBuffer[lineNumber][7].blue);  // A3 --> BLUE8
+    send16bitData(matrixBuffer[lineNumber][6].blue);  // B3 --> BLUE7
+    send16bitData(matrixBuffer[lineNumber][5].blue);  // C3 --> BLUE6
+    send16bitData(matrixBuffer[lineNumber][4].blue);  // A2 --> BLUE5
+    send16bitData(matrixBuffer[lineNumber][3].blue);  // B2 --> BLUE4
+    send16bitData(matrixBuffer[lineNumber][2].blue);  // C2 --> BLUE3
+    send16bitData(matrixBuffer[lineNumber][1].blue);  // A1 --> BLUE2
+    send16bitData(matrixBuffer[lineNumber][0].blue);  // B1 --> BLUE1
     // GREEN segment
-    send16bitData(0);    // C1 --> GREEN8
-    send16bitData(0);    // A0 --> GREEN7
-    send16bitData(0);    // B0 --> GREEN6
-    send16bitData(0);    // C0 --> GREEN5
+    send16bitData(matrixBuffer[lineNumber][7].green);  // C1 --> GREEN8
+    send16bitData(matrixBuffer[lineNumber][6].green);  // A0 --> GREEN7
+    send16bitData(matrixBuffer[lineNumber][5].green);  // B0 --> GREEN6
+    send16bitData(matrixBuffer[lineNumber][4].green);  // C0 --> GREEN5
 
     // second data segment for the 1nd MY9221 chip
     send16bitData(CmdMode);
     // GREEN segment
-    send16bitData(0);    // A3 --> GREEN4
-    send16bitData(0);    // B3 --> GREEN3
-    send16bitData(10);    // C3 --> GREEN2
-    send16bitData(0);    // A2 --> GREEN1
+    send16bitData(matrixBuffer[lineNumber][3].green);  // A3 --> GREEN4
+    send16bitData(matrixBuffer[lineNumber][2].green);  // B3 --> GREEN3
+    send16bitData(matrixBuffer[lineNumber][1].green);  // C3 --> GREEN2
+    send16bitData(matrixBuffer[lineNumber][0].green);  // A2 --> GREEN1
     // RED segment
-    send16bitData(0xA5);    // B2 --> RED8
-    send16bitData(0xFF);  // C2 --> RED7
-    send16bitData(0);    // A1 --> RED6
-    send16bitData(0xFF);  // B1 --> RED5
-    send16bitData(0);    // C1 --> RED4
-    send16bitData(0);  // A0 --> RED3
-    send16bitData(0);    // B0 --> RED2
-    send16bitData(255);  // C0 --> RED1
+    send16bitData(matrixBuffer[lineNumber][7].red);  // B2 --> RED8
+    send16bitData(matrixBuffer[lineNumber][6].red);  // C2 --> RED7
+    send16bitData(matrixBuffer[lineNumber][5].red);  // A1 --> RED6
+    send16bitData(matrixBuffer[lineNumber][4].red);  // B1 --> RED5
+    send16bitData(matrixBuffer[lineNumber][3].red);  // C1 --> RED4
+    send16bitData(matrixBuffer[lineNumber][2].red);  // A0 --> RED3
+    send16bitData(matrixBuffer[lineNumber][1].red);  // B0 --> RED2
+    send16bitData(matrixBuffer[lineNumber][0].red);  // C0 --> RED1
 
+    // disable decoder while updating the current line (E3 = LOW)
+    DEC_PORT &=~ _BV(DEC_E3);
 
     // data transfered and latch it
     latchData();
 
     // activate the current line
-    uint8_t lineBits  = (m_currentLine << DEC_A0);  // calculate line bits
-    DEC_PORT &= ~(0b111 << DEC_A0);                 // clear bits in PORT
-    DEC_PORT |= lineBits;                           // set new bits in PORT
+    uint8_t lineBits  = (lineNumber << DEC_A0); // calculate line bits
+    DEC_PORT &= ~(0b111 << DEC_A0);             // clear bits in PORT
+    DEC_PORT |= lineBits;                       // set new bits in PORT
     
     // enable the decoder  (E3 = HIGH)
     DEC_PORT |= _BV(DEC_E3);
 }
 
-ISR(TIMER1_COMPA_vect)
+// update the full matrix
+// t_updateMatrix = ???
+void MatrixDriver::updateMatrix()
 {
-    //Md.updateLine(1);
+    // update all lines
+    for(uint8_t i=0;i<8;i++)
+    {
+        Md.updateLine(i);
+    }
 }
 
+ISR(TIMER1_COMPA_vect)
+{
+    // TODO: check if serial data available
+    // TODO: get serial data and save the values in the buffer
+}
 
 MatrixDriver Md;
