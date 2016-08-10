@@ -155,7 +155,7 @@ void MatrixDriver::setMatrixPixel(uint8_t row, uint8_t col, uint16_t red, uint16
 }
 
 // update one line of the matrix
-// t_updateLine = ???
+// t_updateLine = 0.475ms
 void MatrixDriver::updateLine(uint8_t lineNumber)
 {
     // send the new data
@@ -209,7 +209,7 @@ void MatrixDriver::updateLine(uint8_t lineNumber)
 }
 
 // update the full matrix
-// t_updateMatrix = ???
+// t_updateMatrix = 3.814ms
 void MatrixDriver::updateMatrix()
 {
     // update all lines
