@@ -7,18 +7,41 @@
 
 #include <MatrixDriver.h>
 
-rgbValues rgb = {255, 0, 0};
+int8_t row   = 0;
+int8_t col   = 0;
+
+int16_t red   = 0x00;
+int16_t green = 0x00;
+int16_t blue  = 0x00;
 
 void setup()
 {
-  Md.init();
+	// init serial port
+	Serial.begin(9600);
+	// init led matrix and clear buffer
+	Md.init();
+  	Md.flashMatrixBuffer(0x10,0x00,0x00);
 }
 
 void loop() 
 {
-	for(uint8_t i=0;i<8;i++)
+	// TODO: serial communication
+	while (Serial.available() > 0)
 	{
-		delay(1);
-		Md.updateLine(i);
+		//row   = Serial.parseInt();
+		//col   = Serial.parseInt();
+		
+		red   = Serial.parseInt();
+		green = Serial.parseInt();
+		blue  = Serial.parseInt();
+		if (Serial.read() == '\n')
+		{
+			//Md.setMatrixPixel(row, col, red, green, blue);
+			Md.flashMatrixBuffer(red, green, blue);
+		}
+		Serial.write('1\n');
 	}
+
+	// update full matrix with current buffer as fast as possible
+	Md.updateMatrix();
 }

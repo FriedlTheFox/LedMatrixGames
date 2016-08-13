@@ -16,10 +16,9 @@ const char *byte_to_binary(int x)
     return b;
 }
 
-int main()
+int calculationDecoderLine()
 {
 	char DEC_PORT = 0b10000001;
-	char mask = 0b00111000;
 	char lineBits = 0;
 	char lineNo = 0;
 
@@ -43,4 +42,80 @@ A0(4), A1(5), A2(6)
 */
 		}
     return 0;
+}
+
+// colors of the RGB led
+struct ledColor 
+{
+	int red;
+	int green; 
+	int blue;
+} rgbValue;
+
+int activeBuffer = 1;
+
+// led definition for the full matrix
+ledColor MatrixBuffer_01[7][7];
+ledColor MatrixBuffer_02[7][7];
+
+ledColor setLedColor(int red, int green, int blue)
+{
+	rgbValue.red   = red;
+	rgbValue.green = green;
+	rgbValue.blue  = blue;
+	return rgbValue;
+}
+
+void clearMatrixBuffer()
+{
+	if(activeBuffer == 1)
+	{
+		for(int row=0;row<8;row++)
+		{
+			for(int colom=0;colom<8;colom++)
+			{	
+				MatrixBuffer_01[row][colom] = setLedColor(0x00, 0x00, 0x00);
+			}
+		}
+	}
+	else
+	{
+		for(int row=0;row<8;row++)
+		{
+			for(int colom=0;colom<8;colom++)
+			{	
+				MatrixBuffer_02[row][colom] = setLedColor(0x00, 0x00, 0x00);
+			}
+		}
+	}
+}
+
+void flashMatrixBuffer(int red, int green, int blue)
+{
+	for(int row=0;row<8;row++)
+	{
+		for(int colom=0;colom<8;colom++)
+		{
+			MatrixBuffer_01[row][colom] = setLedColor(red, green, blue);
+		}
+	}
+}
+
+
+int main()
+{
+	printf("Hello Word!\n");
+	MatrixBuffer_01[0][0] = setLedColor(1,4,3);
+	printf("%d\n", MatrixBuffer_01[0][0].red);
+	printf("%d\n", MatrixBuffer_01[0][0].green);
+	printf("%d\n", MatrixBuffer_01[0][0].blue);
+	clearMatrixBuffer();
+	printf("%d\n", MatrixBuffer_01[0][0].red);
+	printf("%d\n", MatrixBuffer_01[0][0].green);
+	printf("%d\n", MatrixBuffer_01[0][0].blue);
+	flashMatrixBuffer(5,4,3);
+	printf("%d\n", MatrixBuffer_01[0][0].red);
+	printf("%d\n", MatrixBuffer_01[0][0].green);
+	printf("%d\n", MatrixBuffer_01[0][0].blue);
+	return 0;
 }
