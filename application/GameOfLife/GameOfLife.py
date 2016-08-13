@@ -9,20 +9,24 @@
 #  */
 
 from GameField import GameField
-from Cell import Cell
+import time
 
 # Implementation of the game of life.
 class GameOfLife():
 
     def main():  # @NoSelf
-        size = 8
-        initialState = [[Cell() for x in range(size)] for y in range(size)] 
-        initialState[3][3].becomePopulated()
-        initialState[3][4].becomePopulated()
-        initialState[3][5].becomePopulated()
+        initialState =[[0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 1, 1, 0, 0, 0, 0],
+                       [0, 0, 1, 1, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 1, 1, 0, 0],
+                       [0, 0, 0, 0, 1, 1, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0]]
         gameField = GameField(initialState)
-        gameField.calculateNextRound()
-        gameField.calculateNextRound()
+        while True:
+            gameField.calculateNextRound()
+            time.sleep(1)
 
     if __name__ == "__main__":
         main()

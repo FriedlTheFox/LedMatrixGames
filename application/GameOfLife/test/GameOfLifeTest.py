@@ -51,36 +51,36 @@ class GameOfLifeTest(unittest.TestCase):
         self.assertEqual(self.cell.isAliveInNextRound(8), False)
 
     def testCount0Neighbours(self):
-        initialState = [[False, False, False],
-                        [False, False, False],
-                        [False, False, False],
-                        [False, False, False]]
+        initialState = [[0, 0, 0],
+                        [0, 0, 0],
+                        [0, 0, 0],
+                        [0, 0, 0]]
         gameField = GameField(initialState)
         self.assertEqual(gameField.countAliveNeighbours(1,1), 0)
 
     def testCount8Neighbours(self):
-        initialState = [[True, True, True],
-                        [True, True, True],
-                        [True, True, True],
-                        [True, True, True]]
+        initialState = [[1, 1, 1],
+                        [1, 1, 1],
+                        [1, 1, 1],
+                        [1, 1, 1]]
         gameField = GameField(initialState)
         self.assertEqual(gameField.countAliveNeighbours(1,1), 8)
         
     def testCountNeighbours(self):
-        initialState =[[False,    False,    False],
-                       [False,    True,     False],
-                       [False,    True,     False],
-                       [False,    True,     False],
-                       [False,    False,    False]]
+        initialState =[[0, 0, 0],
+                       [0, 1, 0],
+                       [0, 1, 0],
+                       [0, 1, 0],
+                       [0, 0, 0]]
         gameField = GameField(initialState)
         self.assertEqual(gameField.countAliveNeighbours(3,1), 1)
         
     def testSimpleStaticObject(self):
-        firstState =  [[False,    False,    False],
-                       [False,    True,     False],
-                       [True,     False,    True],
-                       [False,    True,     False],
-                       [False,    False,    False]]
+        firstState =  [[0, 0, 0],
+                       [0, 1, 0],
+                       [1, 0, 1],
+                       [0, 1, 0],
+                       [0, 0, 0]]
          
         gameField = GameField(firstState)
         self.assertEqual(gameField.getCurrentField(), firstState)
@@ -90,17 +90,17 @@ class GameOfLifeTest(unittest.TestCase):
         self.assertEqual(gameField.getCurrentField(), firstState)
     
     def testSimpleOscillatingObject(self):
-        firstState =  [[False,    False,    False],
-                       [False,    True,     False],
-                       [False,    True,     False],
-                       [False,    True,     False],
-                       [False,    False,    False]]
+        firstState =  [[0, 0, 0],
+                       [0, 1, 0],
+                       [0, 1, 0],
+                       [0, 1, 0],
+                       [0, 0, 0]]
          
-        secondState = [[False,    False,    False],
-                       [False,    False,    False],
-                       [True,     True,     True],
-                       [False,    False,    False],
-                       [False,    False,    False]]
+        secondState = [[0, 0, 0],
+                       [0, 0, 0],
+                       [1, 1, 1],
+                       [0, 0, 0],
+                       [0, 0, 0]]
          
         gameField = GameField(firstState)
         self.assertEqual(gameField.getCurrentField(), firstState)

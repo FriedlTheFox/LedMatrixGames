@@ -15,20 +15,26 @@ class GameField():
 
     def __init__(self, initialState): 
         self.sizeX = len(initialState)
-        self.sizeY = len(initialState[0])
-        initialCells = [[Cell() for x in range(self.sizeY)] for y in range(self.sizeX)]
-        for i in range(self.sizeX):
-            for j in range(self.sizeY):
-                initialCells[i][j].setAlive(initialState[i][j])
-        self.gameField = initialCells
+        self.sizeY = len(initialState[0])        
+        self.gameField = self.convertValuesToCells(initialState)
         self.printField()
         
-    def getCurrentField(self):
-        currentValues = [[False for x in range(self.sizeY)] for y in range(self.sizeX)]
+    def convertValuesToCells(self, valueMatrix):
+        cellMatrix = [[Cell() for _ in range(self.sizeY)] for _ in range(self.sizeX)]
         for i in range(self.sizeX):
             for j in range(self.sizeY):
-                currentValues[i][j] = self.gameField[i][j].getAlive()
-        return currentValues
+                cellMatrix[i][j].setAlive(bool(valueMatrix[i][j]))
+        return cellMatrix
+    
+    def convertCellsToValues(self, cellMatrix):
+        valueMatrix = [[False for _ in range(self.sizeY)] for _ in range(self.sizeX)]
+        for i in range(self.sizeX):
+            for j in range(self.sizeY):
+                valueMatrix[i][j] = cellMatrix[i][j].getAlive()
+        return valueMatrix
+        
+    def getCurrentField(self):
+        return self.convertCellsToValues(self.gameField)
 
     def printField(self):
         for i in range(self.sizeX):
@@ -47,7 +53,7 @@ class GameField():
         return count        
             
     def calculateNextRound(self):
-        tmpGameField = [[Cell() for x in range(self.sizeY)] for y in range(self.sizeX)] 
+        tmpGameField = [[Cell() for _ in range(self.sizeY)] for _ in range(self.sizeX)] 
         for i in range(self.sizeX):
             for j in range(self.sizeY):
                 neighbours = self.countAliveNeighbours(i,j)

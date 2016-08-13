@@ -30,9 +30,7 @@ class Cell():
             if aliveNeighbours == 3:
                 return True
         else:
-            if aliveNeighbours < 2:
-                return False
-            elif aliveNeighbours > 3:
+            if aliveNeighbours < 2 or aliveNeighbours > 3:
                 return False
             
         return self.isAlive
