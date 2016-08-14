@@ -11,16 +11,16 @@ int8_t row   = 0;
 int8_t col   = 0;
 
 int16_t red   = 0x00;
-int16_t green = 0x00;
+int16_t green = 0x10;
 int16_t blue  = 0x00;
 
 void setup()
 {
 	// init serial port
-	Serial.begin(9600);
+	Serial.begin(115200);
 	// init led matrix and clear buffer
 	Md.init();
-  	Md.flashMatrixBuffer(0x10,0x00,0x00);
+  	Md.flashMatrixBuffer(red,blue,green);
 }
 
 void loop() 
@@ -39,7 +39,7 @@ void loop()
 			//Md.setMatrixPixel(row, col, red, green, blue);
 			Md.flashMatrixBuffer(red, green, blue);
 		}
-		Serial.write('1\n');
+		Serial.write('Check\n');
 	}
 
 	// update full matrix with current buffer as fast as possible
