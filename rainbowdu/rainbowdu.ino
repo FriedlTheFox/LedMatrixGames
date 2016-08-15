@@ -6,6 +6,8 @@
  */
 
 #include <MatrixDriver.h>
+#include "MatrixDriver.h"
+
 
 int8_t row   = 0;
 int8_t col   = 0;

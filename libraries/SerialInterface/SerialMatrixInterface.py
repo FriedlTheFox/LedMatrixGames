@@ -40,7 +40,7 @@ class SerialMatrixInterface():
 	READYTORECEIVE = np.int8(0x01)
 	RECEIVEDROW = np.int8(0x02)
 
-	def __init__(self, port = '/dev/ttyS4' , baud = '9600'):
+	def __init__(self, port = '/dev/ttyACM0' , baud = '9600'):
 
 		self.port = port
 		self.baud = baud
@@ -59,52 +59,23 @@ class SerialMatrixInterface():
 			print 'Could not open serial port ' + self.port
 
 
-	def move(self, direction, newRow):
+	def updateFullMatrix(self, matrix):
 
-		if direction not in ['left', 'right', 'up', 'down']:
-			raise ValueError('Direction not implemented')
+		if matrix.shape != (8,8,3):
+			print 'Matrix has wrong shape expected (8,8,3) but got ' + matrix.shape
 			return
 
-		if newRow.shape != (3,8):
-			raise ValueError('Wrong shape of row; Expected (3,8)')
+		if (np.max(matrix) > 255) or (np.min(matrix) < 0):
+			print 'Check values of matrix'
 			return
 
-		ser.write(NEWROW)
-
-		while(1):
-			response = ser.readline()
-			if response == READYTORECEIVE:
-				break
-
-		if direction == 'up':
-			self.ser.write(UP)
-		elif direction == 'down':
-			self.ser.write(DOWN)
-		elif direction == 'left':
-			self.ser.write(LEFT)
-		else:
-			self.ser.write(RIGHT)
-
-		for x in np.nditer(newRow):
-			self.ser.write(x):
-
-		self.ser.write(ROWCOMPLETE)
-
-		i = 0
-		while(i < 10):
-			response = ser.readline()
-			if response == RECEIVEDROW:
-				return 0
-
-			i +=1
-
-		print 'Transmitting Row failed'
-		return 1
-		
-
+		for x in np.nditer(matrix):
+			print x
+			#IPS()
+			self.ser.write(str(x))
 
 	def __del__(self):
-		self.ser.clos()
+		self.ser.close()
 
 
 
@@ -114,13 +85,61 @@ if __name__ == "__main__":
 
 	SMI = SerialMatrixInterface()
 
-	newRow = np.empty([3,8], dtype=np.int8)
+	#newRow = np.empty([3,8], dtype=np.int8)
 
-	for x in np.nditer(newRow):
-		print x
+	newMatrix = np.zeros([8,8,3], dtype=np.uint8)
+
+	#Set few LED's
+	newMatrix[2,3,:] = (200,0,0) #red at Pos (2,3)
+	newMatrix[3,4,:] = (0,200,0) #red at Pos (2,3)
+	newMatrix[4,5,:] = (0,0,200) #red at Pos (2,3)
+
+	SMI.updateFullMatrix(newMatrix)
 
 	IPS()
 
-	SMI.move('up', newRow)
 
-	IPS()
+
+	# def move(self, direction, newRow):
+
+	# 	if direction not in ['left', 'right', 'up', 'down']:
+	# 		raise ValueError('Direction not implemented')
+	# 		return
+
+	# 	if newRow.shape != (3,8):
+	# 		raise ValueError('Wrong shape of row; Expected (3,8)')
+	# 		return
+
+
+	# 	ser.write(NEWROW)
+
+	# 	while(1):
+	# 		response = ser.readline()
+	# 		if response == READYTORECEIVE:
+	# 			break
+
+	# 	if direction == 'up':
+	# 		self.ser.write(UP)
+	# 	elif direction == 'down':
+	# 		self.ser.write(DOWN)
+	# 	elif direction == 'left':
+	# 		self.ser.write(LEFT)
+	# 	else:
+	# 		self.ser.write(RIGHT)
+
+	# 	for x in np.nditer(newRow):
+	# 		self.ser.write(x)
+
+	# 	self.ser.write(ROWCOMPLETE)
+
+	# 	i = 0
+	# 	while(i < 10):
+	# 		response = ser.readline()
+	# 		if response == RECEIVEDROW:
+	# 			return 0
+
+	# 		i +=1
+
+	# 	print 'Transmitting Row failed'
+	# 	return 1
+		
