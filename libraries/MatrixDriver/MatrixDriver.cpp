@@ -123,7 +123,7 @@ inline void MatrixDriver::latchData(void)
     // 1. step
                                            // keeping clock at a fixed level
 	MY9221_PORT &=~ _BV(MY9221_DI);        // set data to 0
-    delayMicroseconds(10);                 // wait Tstart > 220us
+    delayMicroseconds(50);                 // wait Tstart > 220us
     // 2. step
     for(unsigned char i=0;i<8;i++)         // send four data pulses (tH>70ns, tL>230ns)
     {
@@ -131,7 +131,7 @@ inline void MatrixDriver::latchData(void)
     }
     // 3. step
                                            // data is loaded in the latch register
-    delayMicroseconds(10);                 // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
+    delayMicroseconds(50);                 // Tstop > 200ns + N * 10ns (N=2 MY9221 chips)
 } 
 
 // save data in buffer
