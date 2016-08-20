@@ -24,7 +24,7 @@ except ImportError:
 
 
 
-import serial
+import serial, time
 import numpy as np
 
 
@@ -40,7 +40,7 @@ class SerialMatrixInterface():
 	READYTORECEIVE = np.int8(0x01)
 	RECEIVEDROW = np.int8(0x02)
 
-	def __init__(self, port = '/dev/ttyS4' , baud = '9600'):
+	def __init__(self, port = '/dev/ttyS4' , baud = '115200'):
 
 		self.port = port
 		self.baud = baud
@@ -55,8 +55,19 @@ class SerialMatrixInterface():
 
 		try:
 			self.ser.open()
+			while True:
+				time.sleep(0.1)
+				if self.ser.readline().startswith("INFO"):
+					break
 		except:
 			print 'Could not open serial port ' + self.port
+
+	def setPixel(self, row, col, red, green, blue):
+
+		self.ser.write("%s,%s,%s,%s,%s\n" % (row, col, red, green, blue))
+		#self.ser.readline()
+		#print "SEND --> %s,%s,%s,%s,%s\n" % (row, col, red, green, blue)
+		#print "READ <-- %s" % self.ser.readline()
 
 
 	def move(self, direction, newRow):
@@ -69,7 +80,7 @@ class SerialMatrixInterface():
 			raise ValueError('Wrong shape of row; Expected (3,8)')
 			return
 
-		ser.write(NEWROW)
+		self.ser.write(NEWROW)
 
 		while(1):
 			response = ser.readline()
@@ -86,7 +97,7 @@ class SerialMatrixInterface():
 			self.ser.write(RIGHT)
 
 		for x in np.nditer(newRow):
-			self.ser.write(x):
+			self.ser.write(x)
 
 		self.ser.write(ROWCOMPLETE)
 
@@ -104,23 +115,24 @@ class SerialMatrixInterface():
 
 
 	def __del__(self):
-		self.ser.clos()
+		self.ser.close()
 
 
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
 
-	SMI = SerialMatrixInterface()
+# 	SMI = SerialMatrixInterface(port = "COM3")
 
-	newRow = np.empty([3,8], dtype=np.int8)
+# 	row = 0
+# 	col = 0
+# 	red   = 255
+# 	green = 0
+# 	blue  = 0
 
-	for x in np.nditer(newRow):
-		print x
+# 	#IPS()
 
-	IPS()
+# 	SMI.setPixel(row, col, red, green, blue)
 
-	SMI.move('up', newRow)
-
-	IPS()
+	
