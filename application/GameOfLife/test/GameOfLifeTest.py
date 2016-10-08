@@ -9,8 +9,8 @@
 #  */
 
 import unittest
-from Cell import Cell
-from GameField import GameField
+from GameOfLife.Cell import Cell
+from GameOfLife.GameField import GameField
 
 class GameOfLifeTest(unittest.TestCase):
 

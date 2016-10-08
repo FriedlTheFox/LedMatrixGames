@@ -80,31 +80,31 @@ class SerialMatrixInterface():
 			raise ValueError('Wrong shape of row; Expected (3,8)')
 			return
 
-		self.ser.write(NEWROW)
+		self.ser.write(self.NEWROW)
 
 		while(1):
-			response = ser.readline()
-			if response == READYTORECEIVE:
+			response = self.ser.readline()
+			if response == self.READYTORECEIVE:
 				break
 
 		if direction == 'up':
-			self.ser.write(UP)
+			self.ser.write(self.UP)
 		elif direction == 'down':
-			self.ser.write(DOWN)
+			self.ser.write(self.DOWN)
 		elif direction == 'left':
-			self.ser.write(LEFT)
+			self.ser.write(self.LEFT)
 		else:
-			self.ser.write(RIGHT)
+			self.ser.write(self.RIGHT)
 
 		for x in np.nditer(newRow):
 			self.ser.write(x)
 
-		self.ser.write(ROWCOMPLETE)
+		self.ser.write(self.ROWCOMPLETE)
 
 		i = 0
 		while(i < 10):
-			response = ser.readline()
-			if response == RECEIVEDROW:
+			response = self.ser.readline()
+			if response == self.RECEIVEDROW:
 				return 0
 
 			i +=1

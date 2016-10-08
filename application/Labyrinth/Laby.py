@@ -12,7 +12,7 @@ import wx
 import random
 import time
 
-from SerialMatrixInterfaceDummy import InputApp
+from SerialInterface.SerialMatrixInterfaceDummy import InputApp
 from SerialInterface import SerialMatrixInterface
 
 from GameObjects import Wall, Way, Door, Key, Player
