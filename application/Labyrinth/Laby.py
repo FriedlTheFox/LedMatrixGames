@@ -14,6 +14,7 @@ import time
 
 from SerialInterface.SerialMatrixInterfaceDummy import InputApp
 from SerialInterface import SerialMatrixInterfaceDummy
+from SerialInterface import SerialMatrixInterface
 
 from GameObjects import Wall, Way, Door, Key, Player
 from SegmentMatrix import getMatrix
@@ -127,7 +128,10 @@ class Labyrinth(object):
 
 class LabyrinthGame(object):
     def __init__(self):
-        self.SMI = SerialMatrixInterfaceDummy.SerialMatrixInterface('COM3', None, None)
+        try:
+            self.SMI = SerialMatrixInterface.SerialMatrixInterface('COM3')
+        except:
+            self.SMI = SerialMatrixInterfaceDummy.SerialMatrixInterface('COM3', None, None)
         
         self.inputApp = InputApp(self)
         self.lab = Labyrinth(self)

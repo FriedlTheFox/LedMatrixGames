@@ -37,6 +37,25 @@ class InputApp():
         frame.Show()
 
 
+class TimeApp():
+    def __init__(self, parent):
+        self.parent = parent
+        frame = wx.Frame(None)
+        self.panel = wx.Panel(frame)
+        
+        self.timer = wx.Timer(self.panel)
+        self.panel.Bind(wx.EVT_TIMER, self.Execution, self.timer)
+        self.timer.Start(1000)
+
+        frame.Show()
+
+    def Execution(self, evt):
+        self.parent.UpdateMatrix()
+
+    def __del__(self, parent):
+        self.timer.Stop()
+
+
 class SerialMatrixInterface():
     def __init__(self, port, parent, *args, **kwargs):
         frame = wx.Frame(None)

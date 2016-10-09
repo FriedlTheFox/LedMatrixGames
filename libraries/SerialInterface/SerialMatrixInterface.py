@@ -60,7 +60,8 @@ class SerialMatrixInterface():
 				if self.ser.readline().startswith("INFO"):
 					break
 		except:
-			print 'Could not open serial port ' + self.port
+			raise 'Could not open serial port ' + self.port
+			
 
 	def setPixel(self, row, col, red, green, blue):
 
