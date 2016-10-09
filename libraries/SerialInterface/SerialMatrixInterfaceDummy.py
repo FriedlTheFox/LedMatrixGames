@@ -85,7 +85,7 @@ class SerialMatrixInterface():
         for x, col in enumerate(self.__matrix):
             for y, row in enumerate(col):
                 dc.SetBrush(wx.Brush(wx.Colour(row[0], row[1], row[2])))
-                dc.DrawCircle(x * 40 + 20, y * 40 + 20, 18)
+                dc.DrawCircle((7 - x) * 40 + 20, y * 40 + 20, 18)
 
     def setPixel(self, x, y, r, g, b):
         self.__matrix[x][y] = [r, g, b]
