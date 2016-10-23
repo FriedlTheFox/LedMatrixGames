@@ -11,29 +11,37 @@ class InputApp():
         self.parent = parent
         frame = wx.Frame(None)
         self.panel = wx.Panel(frame)
-        self.panel.Bind(wx.EVT_KEY_DOWN, self.parent.KeyHandler)
+        self.panel.SetFocus()
 
- #==================================================================================================
- #        topSz = wx.BoxSizer(wx.HORIZONTAL)
- #        upBtn = wx.Button(self.panel)
- #        topSz.Add(upBtn, wx.ALIGN_CENTER)
- # 
- #        midSz = wx.BoxSizer(wx.HORIZONTAL)
- #        lfBtn = wx.Button(self.panel)
- #        rtBtn = wx.Button(self.panel)
- #        midSz.Add(lfBtn)
- #        midSz.Add(rtBtn)
- # 
- #        lowSz = wx.BoxSizer(wx.HORIZONTAL)
- #        dnBtn = wx.Button(self.panel)
- #        lowSz.Add(dnBtn)
- # 
- #        sizer = wx.BoxSizer(wx.VERTICAL)
- #        sizer.Add(topSz)
- #        sizer.Add(midSz)
- #        sizer.Add(lowSz)
- #        self.panel.SetSizerAndFit(sizer)
- #==================================================================================================
+#==================================================================================================
+        topSz = wx.BoxSizer(wx.HORIZONTAL)
+        upBtn = wx.Button(self.panel)
+        upBtn.SetLabel("UP")
+        upBtn.Bind(wx.EVT_BUTTON, self.parent.KeyHandler)
+        topSz.Add(upBtn, wx.ALIGN_CENTER)
+   
+        midSz = wx.BoxSizer(wx.HORIZONTAL)
+        lfBtn = wx.Button(self.panel)
+        lfBtn.SetLabel("LEFT")
+        lfBtn.Bind(wx.EVT_BUTTON, self.parent.KeyHandler)
+        rtBtn = wx.Button(self.panel)
+        rtBtn.SetLabel("RIGHT")
+        rtBtn.Bind(wx.EVT_BUTTON, self.parent.KeyHandler)
+        midSz.Add(lfBtn)
+        midSz.Add(rtBtn)
+   
+        lowSz = wx.BoxSizer(wx.HORIZONTAL)
+        dnBtn = wx.Button(self.panel)
+        dnBtn.SetLabel("DOWN")
+        dnBtn.Bind(wx.EVT_BUTTON, self.parent.KeyHandler)
+        lowSz.Add(dnBtn)
+   
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(topSz)
+        sizer.Add(midSz)
+        sizer.Add(lowSz)
+        self.panel.SetSizerAndFit(sizer)
+#==================================================================================================
         frame.Show()
 
 
