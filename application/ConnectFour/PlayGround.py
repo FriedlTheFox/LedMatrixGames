@@ -3,6 +3,8 @@ Created on 22.10.2016
 
 @author: Willi Meierhof
 '''
+import sys
+print sys.path
 import wx
 from SerialInterface.SerialMatrixInterfaceDummy import SerialMatrixInterface,\
     InputApp
